@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="org.cg.persistence.QnaDAO">
+  
+  <select id="QuestionList" parameterType="org.cg.domain.Criteria" resultType="org.cg.domain.QuestionVO">
+  <!-- select * from tbl_question -->  
+  
+  
+select * from (SELECT rownum rnum,qno, title, content, writer, regdate,updatedate FROM 
+( SELECT qno, title, CONTENT, writer, regdate,UPDATEDATE FROM tbl_question where qno>0 
+ <choose>
+  <when test='type=="t"'>
+  and (title like '%'|| #{keyword} ||'%')
+  </when>
+  <when test='type=="c"'>
+  and (content like '%'|| #{keyword} ||'%')
+  </when>
+  <when test='type=="w"'>
+  and (writer like '%'|| #{keyword} ||'%')
+  </when>
+  </choose>
+order by qno desc) 
+
+ <![CDATA[
+tbl_question where rownum <= #{pageNum}) 
+where rnum >=#{skip}
+  ]]>
+  </select>
+  
+  <select id="getTotal" parameterType="org.cg.domain.Criteria" resultType="int">
+  select count(*) from tbl_question where qno>0
+  <choose>
+  <when test='type=="t"'>
+  and (title like '%'|| #{keyword} ||'%')
+  </when>
+  <when test='type=="c"'>
+  and (content like '%'|| #{keyword} ||'%')
+  </when>
+  <when test='type=="w"'>
+  and (writer like '%'|| #{keyword} ||'%')
+  </when>
+  </choose>
+  </select>
+  
+  
+  <select id="getDetail" parameterType="org.cg.domain.QuestionVO" resultType="org.cg.domain.QuestionVO">
+  select * from tbl_question where qno=${qno}
+  </select>
+  
+  <update id="qupdate" parameterType="org.cg.domain.QuestionVO">
+		UPDATE tbl_question SET title = '${title}', CONTENT='${content}',UPDATEDATE=sysdate WHERE qno ='${qno}'
+	</update>
+  
+  
+  <delete id="qdelete" parameterType="org.cg.domain.QuestionVO">
+		delete from tbl_question where qno='${qno}'
+
+	</delete>
+  
+  <insert id="qinsert" parameterType="org.cg.domain.QuestionVO">
+  insert into tbl_question(qno,title,CONTENT,writer) values (seq_question_qno.nextval,#{title},#{content},#{writer})
+  
+  <selectKey keyProperty="qno" resultType="int" order="AFTER">  
+	SELECT seq_question_qno.currval FROM dual
+	</selectKey>
+
+  </insert>
+  
+  
+  
+  <!-- ==============================answer쪽 맵퍼입니다========================================= -->
+  <!-- ==============================answer쪽 맵퍼입니다========================================= -->
+  <!-- ==============================answer쪽 맵퍼입니다========================================= -->  
+  <!-- ==============================answer쪽 맵퍼입니다========================================= -->
+  
+  
+    <select id="getAnsList" parameterType="org.cg.domain.QuestionVO" resultType="org.cg.domain.QAnswerVO">
+  select * from tbl_answer where aqno=${qno}
+  </select>
+  
+  
+  
+  
+	<update id="aupdate" parameterType="org.cg.domain.QAnswerVO">
+		UPDATE tbl_answer SET aCONTENT='${acontent}',aUPDATEDATE=sysdate WHERE aano =${aano}
+	</update>
+
+  <delete id="adelete" parameterType="org.cg.domain.QAnswerVO">
+		delete from tbl_answer where aano=${aano}
+
+	</delete>
+
+  <insert id="ainsert" parameterType="org.cg.domain.QAnswerVO">
+  
+  insert into tbl_answer(aano,aqno,acontent,awriter)values(seq_answer_ano.nextval,${aqno},'${acontent}','${awriter}')
+ 
+  </insert>
+  
+  
+  
+  <delete id="adeleteall" parameterType="org.cg.domain.QuestionVO" >
+  delete from tbl_answer where aqno=${qno}
+  </delete>
+  
+ 
+  
+  <!-- ==============================qfile쪽 맵퍼입니다========================================= -->
+  <!-- ==============================qfile쪽 맵퍼입니다========================================= -->
+  <!-- ==============================qfile쪽 맵퍼입니다========================================= -->  
+  <!-- ==============================qfile쪽 맵퍼입니다========================================= -->
+  
+  
+  <insert id="qfileinsert" parameterType="org.cg.domain.QfileVO">
+  insert into tbl_qfile(fno,fqno,filename)values(seq_qfile_fno.nextval,${fqno},'${filename}')
+  </insert>
+  
+  
+  <select id="qfilesearch" parameterType="org.cg.domain.QuestionVO" resultType="org.cg.domain.QfileVO">
+  select * from tbl_qfile where fqno=#{qno}
+  </select>
+  
+  
+  <delete id="qfileDelete" parameterType="String">
+  delete from tbl_qfile where filename=#{value}
+  </delete>
+  
+  
+  <delete id="qfileAllDelete" parameterType="String">
+  delete from tbl_qfile where fqno=${qno}
+  </delete>
+  
+  
+  
+  
+  
+  </mapper>

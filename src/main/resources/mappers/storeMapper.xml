@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.cg.persistence.StoreDAO">
+
+	<select id="login" resultType="org.cg.domain.StoreVO">
+		select * from tbl_store where sid = #{sid} and spw = #{spw}
+	</select>
+
+	<insert id="storeregi">
+		INSERT INTO TBL_STORE(sid, spw,sname,saddr,lat,lng,sphone,semail,saddrm,scategory) VALUES('${sid}', '${spw}','${sname}','${saddr}','${lat}','${lng}','${sphone}','${semail}','${saddrm}','${scategory}')
+	</insert>
+	
+	<update id="storemodi" parameterType="org.cg.domain.StoreVO">
+		UPDATE TBL_STORE SET spw='${spw}',sname='${sname}',saddr='${saddr}',lat='${lat}',lng='${lng}',sphone='${sphone}',semail='${semail}',saddrm='${saddrm}',scategory='${scategory}' WHERE sid ='${sid}' 
+	</update>
+	
+	<update id="keepLogin">
+		update tbl_store set sessionKey = #{sessionID}, sessionLimit = #{next} where sid = #{sid}
+	</update>
+	
+	<select id="findId" resultType="org.cg.domain.StoreVO">
+		select * from tbl_store where sname = #{sname} and semail = #{semail}
+	</select>
+	
+	<select id="findPw" resultType="org.cg.domain.StoreVO">
+		select * from tbl_store where sid = #{sid} and semail = #{semail}
+	</select>
+	
+	<select id="checkSessionKey" resultType="org.cg.domain.StoreVO">
+		select * from tbl_store where sessionKey = #{value} and sessionlimit > sysdate	
+	</select>
+	
+	<select id="storeList" resultType="org.cg.domain.StoreVO" parameterType="org.cg.domain.Criteria">
+		select * from (SELECT rownum rnum, sid,spw,sname,saddr,sphone,semail,gubun, regdate,updatedate FROM 
+		(SELECT sid,spw,sname,saddr,sphone,semail,gubun, regdate,updatedate FROM tbl_store where gubun != 'admin'
+		<choose>
+			  <when test='type=="i"'>
+			  and (sid like '%'|| #{keyword} ||'%')
+			  </when>
+			  <when test='type=="n"'>
+			  and (sname like '%'|| #{keyword} ||'%')
+			  </when>
+			  <when test='type=="a"'>
+			  and (saddr) like '%'|| #{keyword} ||'%')
+			  </when>
+			  <when test='type=="p"'>
+			  and (sphone) like '%'|| #{keyword} ||'%')
+			  </when>
+			  <when test='type=="e"'>
+			  and (semail) like '%'|| #{keyword} ||'%')
+			  </when>
+		</choose>
+	 
+			 order by updatedate desc) 
+			<![CDATA[tbl_store where rownum <= #{pageNum}) where rnum >= #{skip}]]>
+	</select>
+	
+	<select id="storeTotal" resultType="int" parameterType="org.cg.domain.Criteria">
+		select count(sid) from tbl_store where sid IS NOT NULL
+		<choose>
+				  <when test='type=="i"'>
+				  and (sid like '%'|| #{keyword} ||'%')
+				  </when>
+				  <when test='type=="n"'>
+				  and (sname like '%'|| #{keyword} ||'%')
+				  </when>
+				  <when test='type=="a"'>
+				  and (saddr) like '%'|| #{keyword} ||'%')
+				  </when>
+				  <when test='type=="p"'>
+				  and (sphone) like '%'|| #{keyword} ||'%')
+				  </when>
+				  <when test='type=="e"'>
+				  and (semail) like '%'|| #{keyword} ||'%')
+				  </when>
+		</choose>
+	</select>
+	
+	<select id="storeRead" resultType="org.cg.domain.StoreVO">
+	select * from tbl_store where sid=#{sid}
+	</select>
+	
+	<delete id="storeDel">
+	delete from tbl_store where sid=#{sid}
+	</delete>
+	
+	
+
+</mapper>

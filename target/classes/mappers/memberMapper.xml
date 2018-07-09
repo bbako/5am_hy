@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.cg.persistence.MemberDAO">
+
+	
+	<select id="listAll" resultType="org.cg.domain.MemberVO" parameterType="hashmap">
+	<choose><when test='vo.sid!="admin"'>
+	select rnum, mid, mname,maddr, regdate, updatedate, cno, sid, cregdate  from 
+	(SELECT rownum rnum, m.mid, mname,maddr,  m.regdate, m.updatedate, cno, sid, c.regdate cregdate 
+	FROM TBL_MEMBER m LEFT OUTER JOIN TBL_CHOICE c ON m.mid = c.mid where sid='${vo.sid}' 
+  
+  		<choose>
+			<when test='cri.type=="x"'>
+			 
+			</when>
+			<when test='cri.type=="i"'>
+			  and (mid like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			<when test='cri.type=="n"'>
+			  and (mname like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			
+			
+			<when test='cri.type=="d"'>
+			  and (maddr like '%'|| '${cri.keyword}' ||'%')
+			</when>
+		</choose> 
+		<![CDATA[and rownum<= ${cri.pageNum} ) mc where rnum>= ${cri.skip} order by regdate desc]]></when>
+		<when test='vo.sid=="admin"'>
+		select * from (SELECT rownum rnum ,mid, mname,maddr,  regdate, updatedate FROM 
+		( SELECT mid, mname, maddr,  regdate, updatedate FROM tbl_member where 1=1
+		
+		<choose>
+			<when test='cri.type=="x"'>
+			 
+			</when>
+			<when test='cri.type=="i"'>
+			  and (mid like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			<when test='cri.type=="n"'>
+			  and (mname like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			
+			
+			<when test='cri.type=="d"'>
+			  and (maddr like '%'|| '${cri.keyword}' ||'%')
+			</when>
+		</choose>
+		order by regdate desc) 
+		  <![CDATA[ tbl_member where rownum <= ${cri.pageNum}) where rnum >= ${cri.skip} ]]>
+		</when>
+	</choose> 
+	
+	</select>
+
+	
+	<select id="totalCount" resultType="Int" parameterType="hashmap" >
+	
+	<choose><when test='vo.sid!="admin"'>
+		select count(rnum) from (SELECT rownum rnum, m.mid, mname,maddr,  m.regdate, m.updatedate,
+		 cno, sid, c.regdate cregdate FROM TBL_MEMBER m LEFT OUTER JOIN TBL_CHOICE c ON m.mid = c.mid where sid='${vo.sid}') where rnum>0
+		  <choose>
+			<when test='cri.type=="x"'>
+			 
+			</when>
+			<when test='cri.type=="i"'>
+			  and (mid like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			<when test='cri.type=="n"'>
+			  and (mname like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			
+			
+			<when test='cri.type=="d"'>
+			  and (maddr like '%'|| '${cri.keyword}' ||'%')
+			</when>
+		</choose>
+		</when>
+		<when test='vo.sid=="admin"'>
+		SELECT count(mid) FROM TBL_MEMBER where mid is not null 
+		<choose>
+			<when test='cri.type=="x"'>
+			 
+			</when>
+			<when test='cri.type=="i"'>
+			  and (mid like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			<when test='cri.type=="n"'>
+			  and (mname like '%'|| '${cri.keyword}' ||'%')
+			</when>
+			
+			<when test='cri.type=="d"'>
+			  and (maddr like '%'|| '${cri.keyword}' ||'%')
+			</when>
+		</choose> 
+		
+		ORDER BY UPDATEDATE desc
+		</when>
+	</choose> 
+		
+		
+	</select>
+
+	<insert id="create" parameterType="org.cg.domain.MemberVO">
+		insert into	tbl_Member(mid,mpw,mname,maddr) values ('${mid}','${mpw}','${mname}','${maddr}')
+	</insert>
+
+	<delete id="delete" parameterType="org.cg.domain.MemberVO">
+		delete from tbl_Member where mid='${mid}'
+
+	</delete>
+	
+	<update id="update" parameterType="org.cg.domain.MemberVO">
+		UPDATE tbl_Member SET mpw = '${mpw}', mname='${mname}', maddr='${maddr}', updatedate = sysdate WHERE mid = '${mid}'
+	</update>
+	
+	<select id="qlistAll" resultType="org.cg.domain.MQuestionVO" parameterType="map">
+		
+		select * from (SELECT rownum rnum ,mqno, mid, sid, title, question, regdate, updatedate,checked FROM 
+		( SELECT mqno, mid, sid, title, question, regdate, updatedate,checked FROM tbl_Mquestion where mqno>0 
+		<choose><when test='vo.sid!="admin"'>		
+		and sid='${vo.sid}'</when></choose>		
+		<choose>
+			<when test='cri2.type2=="x"'>			 
+			</when>
+			<when test='cri2.type2=="i"'>
+			  and (mid like '%'|| '${cri2.keyword2}' ||'%')
+			</when>			
+			<when test='cri2.type2=="t"'>
+			  and (title like '%'|| '${cri2.keyword2}' ||'%')
+			</when>		
+			<when test='cri2.type2=="c"'>
+			  and (question like '%'|| '${cri2.keyword2}' ||'%')
+			</when>			
+		</choose>		
+		<if test='vo.sid=="admin" and cri2.type2=="s" '>			
+		and (sid like '%'|| '${cri2.keyword2}' ||'%')			
+		</if>		
+		<![CDATA[
+		 order by regdate desc) tbl_Mquestion where rownum <= ${cri2.pageNum2}) where rnum >= ${cri2.skip2} ]]>
+	</select>
+	
+	<select id="qtotalCount" resultType="Int" parameterType="map">
+		select count(*) from tbl_Mquestion where mqno>0 
+		<choose><when test='vo.sid!="admin"'>
+		
+		and sid='${vo.sid}'</when></choose>
+		
+		<choose>
+			<when test='cri2.type2=="x"'>
+			 
+			</when>
+			<when test='cri2.type2=="i"'>
+			  and (mid like '%'|| '${cri2.keyword2}' ||'%')
+			</when>
+			<when test='cri2.type2=="t"'>
+			  and (title like '%'|| '${cri2.keyword2}' ||'%')
+			</when>
+			<when test='cri2.type2=="c"'>
+			  and (question like '%'|| '${cri2.keyword2}' ||'%')
+			</when>
+			
+		</choose>
+			
+	</select>
+	
+	<select id="qzeroCount" resultType="Int" parameterType="map">
+		SELECT count(mqno) FROM TBL_MQUESTION where CHECKED=0
+		<choose><when test='vo.sid!="admin"'>
+		
+		and sid='${vo.sid}'</when></choose>
+			
+	</select>
+	
+	<select id="qread" resultType="org.cg.domain.MQuestionVO">
+		SELECT * FROM tbl_Mquestion where mqno=#{mqno}
+	</select>
+		
+	<delete id="qdelete">
+		DELETE TBL_MQUESTION where MQNO=#{mqno}
+	</delete>
+	
+	<insert id="acreate" parameterType="org.cg.domain.MAnswerVO">
+		INSERT INTO tbl_Manswer(mano, mqno, sid, title, content) VALUES (seq_Manswer_mano.nextval, '${mqno}', '${sid}','${title}', '${content}')
+	</insert>
+	
+	<update id="achecked" parameterType="org.cg.domain.MAnswerVO">
+		UPDATE TBL_MQUESTION SET checked = CHECKED+1 where MQNO=${mqno}
+	</update>
+	
+	<select id="aread" resultType="org.cg.domain.MAnswerVO">
+		SELECT * FROM tbl_Manswer where mqno=#{mqno} order by updatedate desc
+	</select>
+	
+	<update id="aupdate" parameterType="org.cg.domain.MAnswerVO">
+		UPDATE tbl_Manswer SET mqno='${mqno}', title='${title}', content='${content}' WHERE mano = '${mano}'
+	</update>
+	
+	<delete id="adeleteall" parameterType="org.cg.domain.MQuestionVO">
+		DELETE tbl_Manswer where mqno='${mqno}'
+	</delete>
+	
+	<delete id="adelete" parameterType="org.cg.domain.MAnswerVO">
+		DELETE tbl_Manswer where mano='${mano}'
+	</delete>
+	
+	
+	
+
+
+</mapper>

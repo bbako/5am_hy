@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.cg.persistence.ElevatorDAO">
+<insert id="insertel" parameterType="org.cg.domain.ElevatorVO">
+insert into tbl_elevator (eno,elvname, lat, lng) values (seq_elevator_eno.nextval,#{elvname},#{lat},#{lng})
+</insert>
+
+<select id="elvlist" resultType="org.cg.domain.ElevatorVO" parameterType="org.cg.domain.Criteria">
+select * from (SELECT rownum rnum,eno, elvname,lat,lng,regdate,updatedate FROM 
+( SELECT eno, elvname, lat, lng, regdate,UPDATEDATE FROM tbl_elevator where eno>0
+  <choose>
+  <when test='type=="t"'>
+  and (elvname like '%'|| #{keyword} ||'%')
+  </when>
+ 
+  </choose>
+ order by eno desc) 
+<![CDATA[
+tbl_elevator where rownum <= #{pageNum}) 
+where rnum >= #{skip}
+  ]]>
+</select>
+
+<select id="elvcount" resultType="int">
+select count(eno) from TBL_elevator where eno>0
+   <choose>
+  <when test='type=="t"'>
+  and (elvname like '%'|| #{keyword} ||'%')
+  </when>
+  </choose>
+</select>
+
+<select id="listAll" resultType="org.cg.domain.ElevatorVO">
+SELECT * FROM TBL_ELEVATOR
+</select>
+
+<delete id="elvdelete" parameterType="org.cg.domain.ElevatorVO">
+delete from tbl_elevator where eno='${eno}'
+</delete>
+
+
+
+</mapper>
